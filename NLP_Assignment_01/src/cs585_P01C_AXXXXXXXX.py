@@ -1,80 +1,90 @@
 
 import nltk
-from nltk.corpus import brown
-from nltk.util import bigrams
+from nltk.corpus import brown, stopwords
+from nltk.util import ngrams
 
 
 
 # ................................
+stop_words = None
+corpus = None
+sentence = None
 
-
-# Function to looad Data
-def looadData():
+# Function to init program
+def init():
+    global stop_words,corpus
     nltk.download('brown')
-
-
+    stop_words = set(stopwords.words('english'))
+    corpus_words = brown.words()
+    corpus = [w.lower() for w in corpus_words if w.isalpha() and w.lower() not in stop_words]
+    print("\n\n")
+    
 # ................................
 
-# Calculate the probability of a sentence
-def calculate_sentence_probability(bigram_model,sentence):
-    words = nltk.word_tokenize(sentence)
-    bigrams_list = list(bigrams(words))
-    sentence_probability = 1.0
 
-    for bigram in bigrams_list:
-        probability = calculate_probability(bigram_model,bigram)
-        sentence_probability *= probability
-
-    # Assume probability of any bigram starting or ending a sentence is 0.25
-    sentence_probability *= 0.25 * 0.25
-
-    return sentence_probability
-
+# Function to ask the user for initial word/token W1
+def initialWord():
+    word = ""
+    while True:
+        word = input("Enter an initial word/token: ").lower()
+        if word not in corpus:
+            choice = input("The word is not in the corpus. Do you want to try again? (Y/N): ")
+            choice = choice.lower()
+            if choice == 'n':
+                quit()
+        else:
+            break
+    return word
+            
 # ................................
-
-# Calculate the probability of a bigram given its preceding word
-def calculate_probability(bigram_model,bigram):
-    preceding_word = bigram[0]
-    bigram_count = bigram_model[bigram]
-    preceding_word_count = bigram_model[preceding_word]
-    probability = bigram_count / (preceding_word_count+1)
-    return probability
-
+# Function to reutern 3 words to follow word
+def get_next_words(word):
+    ngram_freq = nltk.FreqDist(ngrams(corpus, 2))
+    possible_next_words = [ngram[1] for ngram in ngram_freq if ngram[0] == word]
+    sorted_next_words = sorted(possible_next_words, key=lambda next_word: ngram_freq[(word, next_word)], reverse=True)[:3]
+    probabilities = {}
+    for i, next_word in enumerate(sorted_next_words):
+        prob = ngram_freq[(word,next_word)] / len(possible_next_words)
+        probabilities[next_word] = prob
+         
+    return probabilities
 
 # ................................
 
 def main():
     
-    looadData()
-    print("\n\n")
-    # Ask the user to enter a sentence
-    sentence = input("Enter a sentence: ")
-    # Apply lowercasing to the sentence
-    sentence = sentence.lower()
+    # init program
+    init()
+    global sentence
     
-    # Calculate P(S) assuming a 2-gram language model
-    corpus_words = brown.words()
-    bigram_model = nltk.FreqDist(bigrams(corpus_words))
-  
-    
-    
-    # Display the sentence, individual bigrams, and the final probability
-    print("\n\n")
-    print("Sentence:", sentence)
-    print("Individual Bigrams and Probabilities:")
+    # Ask the user for initial word/token W1
+    word = initialWord()
+    sentence = [word]
 
-    words = nltk.word_tokenize(sentence)
-    bigrams_list = list(bigrams(words))
-
-    for bigram in bigrams_list:
-        probability = calculate_probability(bigram_model,bigram)
-        print(bigram, "-", probability)
-
-    final_probability = calculate_sentence_probability(bigram_model,sentence)
-    print("Final Probability (P(S)):", final_probability)
     
-   
+    while True:
+        next_words = get_next_words(word.lower())
+        next_words_keys = list(next_words.keys())
+
+        print("\nWhich word should follow:")
+        for i, w in enumerate(next_words_keys):
+            print("{}) {} P({} {}) = {:.6f}".format(i+1,w,word,w,next_words[w]))
+        print(f"{len(next_words)+1}) QUIT")
+        
+        choice = input("Enter your choice: ")  
+        if choice == str(len(next_words) + 1):
+            break
+        
+        elif choice.isdigit() and 1 <= int(choice) <= len(next_words):
+            word = next_words_keys[int(choice) - 1]
+            sentence.append(word)
+        
+        else:
+            word = next_words_keys[0]
+            sentence.append(word)
     
+    print("\nFinal Sentence:", ' '.join(sentence))
+            
     print("\n\n ................ End Part (C) ................\n\n")
 
 

@@ -1,6 +1,4 @@
-import platform
-from os import system
-import sys
+
 import nltk
 from nltk.corpus import brown,reuters,stopwords
 from nltk.probability import FreqDist
@@ -10,8 +8,8 @@ import numpy as np
 # ................................
 stop_words = None
 
-# Function to looad Data
-def looadData():
+# Function to init program
+def init():
     global stop_words
     nltk.download('brown')
     nltk.download('reuters')
@@ -84,7 +82,7 @@ def generateLogPloting(name, words_freq):
 
 def main():
     
-    looadData()
+    init()
     # Get word frequency distribution for Brown Corpus
     brown_word_freq = get_word_frequency(brown)
 
@@ -96,8 +94,8 @@ def main():
     displayTopTenWords(name="Reuters",words_freq=reuters_word_freq)
     
     # Generate log(rank) vs log(frequency) plots for the first 1000 words for both corpora
-    generateLogPloting(name="Brown",words_freq=brown_word_freq)
-    generateLogPloting(name="Reuters",words_freq=reuters_word_freq)
+    # generateLogPloting(name="Brown",words_freq=brown_word_freq)
+    # generateLogPloting(name="Reuters",words_freq=reuters_word_freq)
     
     # Calculate unigram occurrence probability for the words 'technical' and 'not technical' in Brown Corpus
     brown_technical = calculate_unigram_probability(words_freq=brown_word_freq, word="technical")

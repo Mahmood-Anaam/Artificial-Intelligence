@@ -8,9 +8,10 @@ from nltk.util import bigrams
 # ................................
 
 
-# Function to looad Data
-def looadData():
+# Function to init program
+def init():
     nltk.download('brown')
+    print("\n\n")
 
 
 # ................................
@@ -45,8 +46,8 @@ def calculate_probability(bigram_model,bigram):
 
 def main():
     
-    looadData()
-    print("\n\n")
+    init()
+    
     # Ask the user to enter a sentence
     sentence = input("Enter a sentence: ")
     # Apply lowercasing to the sentence
